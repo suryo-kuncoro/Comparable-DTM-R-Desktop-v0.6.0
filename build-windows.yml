@@ -1,0 +1,44 @@
+name: Build Comparable DTM R Portable
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "package.json"
+      - "src/**"
+      - "r/**"
+      - "scripts/**"
+      - ".github/workflows/build-windows.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        shell: powershell
+        run: npm install
+
+      - name: Verify project
+        shell: powershell
+        run: npm run verify
+
+      - name: Build Portable EXE
+        shell: powershell
+        run: npm run dist:portable
+
+      - name: Upload Portable EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Comparable-DTM-R-Portable
+          path: dist/Comparable-DTM-R-Portable-*.exe
+          if-no-files-found: error
