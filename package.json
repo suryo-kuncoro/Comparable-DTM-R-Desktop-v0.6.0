@@ -1,0 +1,50 @@
+{
+  "name": "comparable-dtm-r-desktop",
+  "version": "0.6.0",
+  "description": "Aplikasi desktop Windows untuk membandingkan dua model terrain terhadap GCP dengan input DTM raster atau final/classified LAS-LAZ.",
+  "main": "src/main.js",
+  "author": "PMNP",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "verify": "node scripts/verify_project.js",
+    "dist:portable": "electron-builder --win portable --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "43.0.0",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "com.pmnp.comparabledtm",
+    "productName": "Comparable DTM R",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "r/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      "r/**/*"
+    ],
+    "asarUnpack": [
+      "r/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "Comparable-DTM-R-Portable-${version}.exe",
+      "requestExecutionLevel": "user"
+    }
+  }
+}

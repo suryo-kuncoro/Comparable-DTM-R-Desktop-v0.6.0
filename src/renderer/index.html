@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; img-src 'self' data: file:; style-src 'self' 'unsafe-inline'; script-src 'self';"
+  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparable DTM R</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">CMP</div>
+        <div>
+          <div class="brand-title">Comparable DTM R</div>
+          <div class="brand-sub">Raster + Point Cloud Comparator</div>
+        </div>
+      </div>
+
+      <div class="side-block">
+        <div class="side-label">WORKFLOW</div>
+        <a class="nav-item active" href="#environment"><span>00</span><b>R Environment</b></a>
+        <a class="nav-item" href="#models"><span>01</span><b>Input Models</b></a>
+        <a class="nav-item" href="#reference"><span>02</span><b>GCP Reference</b></a>
+        <a class="nav-item" href="#parameters"><span>03</span><b>Sampling</b></a>
+        <a class="nav-item" href="#run"><span>04</span><b>Run & Result</b></a>
+      </div>
+
+      <div class="side-info">
+        <div class="side-label">RUNTIME</div>
+        <div class="runtime-row"><span>App</span><strong id="appVersion">v0.6.0</strong></div>
+        <div class="runtime-row"><span>Backend</span><strong>R · terra · lidR*</strong></div>
+        <div class="runtime-row"><span>Models</span><strong>Exactly 2</strong></div>
+        <div class="runtime-row"><span>Input</span><strong>TIF / LAS / LAZ</strong></div>
+        <div class="runtime-row"><span>Admin</span><strong class="good">Not required</strong></div>
+      </div>
+
+      <div class="progress-box">
+        <div class="progress-label"><span>PROCESS</span><strong id="progressPercent">0%</strong></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-stage" id="progressStage">Idle</div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section class="hero">
+        <div class="hero-eyebrow">PMNP · Geospatial Quality Control</div>
+        <h1>Comparable DTM R</h1>
+        <p>
+          Bandingkan dua hasil terrain terhadap elevasi GCP lapangan. Setiap model dapat berupa
+          <b>DTM raster</b> atau <b>point cloud final/classified</b> sebelum proses generate DTM.
+        </p>
+
+        <div class="hero-chips">
+          <span>MODELS <b>2 · Nama Bebas</b></span>
+          <span>AUTO DETECT <b>TIF / LAS / LAZ</b></span>
+          <span>POINT CLOUD <b>No Rasterization</b></span>
+          <span>REFERENCE <b>Common Valid GCP</b></span>
+        </div>
+      </section>
+
+      <section class="panel" id="environment">
+        <div class="panel-head">
+          <div class="step-code">00</div>
+          <div>
+            <h2>R Environment</h2>
+            <p><code>terra</code> untuk raster/GCP. <code>lidR</code> hanya dibutuhkan jika salah satu input berupa LAS/LAZ.</p>
+          </div>
+          <div class="status-pill neutral" id="envStatus">Belum diperiksa</div>
+        </div>
+
+        <div class="field-grid env-grid">
+          <label class="field span-2">
+            <span>Rscript.exe</span>
+            <div class="file-control">
+              <input id="rscriptPath" type="text" readonly placeholder="Deteksi otomatis atau pilih manual">
+              <button class="btn secondary" id="pickRscript">Pilih</button>
+            </div>
+          </label>
+          <div class="field actions-field">
+            <span>Environment Check</span>
+            <button class="btn primary" id="checkEnvironment">Periksa Package</button>
+          </div>
+        </div>
+
+        <div class="note">
+          Mode raster tetap dapat digunakan bila <code>lidR</code> tidak tersedia.
+          Aplikasi tidak melakukan instalasi package otomatis pada PC perusahaan.
+        </div>
+      </section>
+
+      <section class="panel" id="models">
+        <div class="panel-head">
+          <div class="step-code">01</div>
+          <div>
+            <h2>Input Models</h2>
+            <p>Tepat dua model. Jenis input dikenali otomatis dari ekstensi file.</p>
+          </div>
+        </div>
+
+        <div class="model-grid">
+          <article class="model-card model-one">
+            <div class="model-card-top">
+              <div class="model-tag">MODEL 1</div>
+              <div class="type-pill neutral" id="model1Type">Belum dipilih</div>
+            </div>
+            <label class="field">
+              <span>Nama Model / Metode</span>
+              <input id="model1Name" type="text" value="Model_A" placeholder="Contoh: TerraScan Ground">
+            </label>
+            <label class="field">
+              <span>Raster DTM atau Final Point Cloud</span>
+              <div class="file-control">
+                <input id="model1Dtm" type="text" readonly placeholder=".tif / .tiff / .las / .laz">
+                <button class="btn secondary" id="pickModel1">Pilih</button>
+              </div>
+            </label>
+            <div class="input-behaviour" id="model1Behaviour">
+              Pilih file untuk melihat cara model akan diproses.
+            </div>
+          </article>
+
+          <article class="model-card model-two">
+            <div class="model-card-top">
+              <div class="model-tag">MODEL 2</div>
+              <div class="type-pill neutral" id="model2Type">Belum dipilih</div>
+            </div>
+            <label class="field">
+              <span>Nama Model / Metode</span>
+              <input id="model2Name" type="text" value="Model_B" placeholder="Contoh: CSF Ground">
+            </label>
+            <label class="field">
+              <span>Raster DTM atau Final Point Cloud</span>
+              <div class="file-control">
+                <input id="model2Dtm" type="text" readonly placeholder=".tif / .tiff / .las / .laz">
+                <button class="btn secondary" id="pickModel2">Pilih</button>
+              </div>
+            </label>
+            <div class="input-behaviour" id="model2Behaviour">
+              Pilih file untuk melihat cara model akan diproses.
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" id="reference">
+        <div class="panel-head">
+          <div class="step-code">02</div>
+          <div>
+            <h2>GCP Reference</h2>
+            <p>Semua model dievaluasi terhadap field elevasi referensi yang sama.</p>
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <label class="field span-2">
+            <span>GCP Lapangan</span>
+            <div class="file-control">
+              <input id="gcpPath" type="text" readonly placeholder="SHP / GPKG / GeoJSON">
+              <button class="btn secondary" id="pickGcp">Pilih</button>
+            </div>
+          </label>
+
+          <label class="field">
+            <span>Field Elevasi Referensi</span>
+            <input id="zField" type="text" value="Z_lapangan" placeholder="Z_lapangan">
+          </label>
+
+          <label class="field">
+            <span>Folder Output</span>
+            <div class="file-control">
+              <input id="outputRoot" type="text" readonly placeholder="Folder induk hasil analisis">
+              <button class="btn secondary" id="pickOutput">Pilih</button>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel" id="parameters">
+        <div class="panel-head">
+          <div class="step-code">03</div>
+          <div>
+            <h2>Sampling Parameters</h2>
+            <p>Parameter raster dan point cloud dipisahkan; aplikasi hanya memakai parameter yang relevan dengan tipe input.</p>
+          </div>
+        </div>
+
+        <div class="parameter-sections">
+          <article class="parameter-section">
+            <div class="section-mini-title">RASTER DTM</div>
+            <label class="field">
+              <span>Ekstraksi Raster</span>
+              <select id="extractionMethod">
+                <option value="simple" selected>Simple — nilai sel pada titik</option>
+                <option value="bilinear">Bilinear — interpolasi 4 sel</option>
+              </select>
+            </label>
+            <p>
+              Digunakan hanya untuk input <code>.tif/.tiff</code>.
+            </p>
+          </article>
+
+          <article class="parameter-section pc-section">
+            <div class="section-mini-title">FINAL POINT CLOUD</div>
+
+            <div class="field-grid compact-grid">
+              <label class="field">
+                <span>Estimator Z pada GCP</span>
+                <select id="pcEstimator">
+                  <option value="idw" selected>IDW k-nearest</option>
+                  <option value="nearest">Nearest ground point</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Ground Point Rule</span>
+                <select id="pcGroundRule">
+                  <option value="auto" selected>Auto — Class 2 jika tersedia</option>
+                  <option value="class2">Force Classification = 2</option>
+                  <option value="all">Use all points — ground-only cloud</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Search Radius (meter)</span>
+                <input id="pcSearchRadius" type="number" min="0.01" step="0.1" value="2.0">
+              </label>
+
+              <label class="field">
+                <span>k Nearest Points</span>
+                <input id="pcK" type="number" min="1" step="1" value="8">
+              </label>
+
+              <label class="field">
+                <span>IDW Power</span>
+                <input id="pcPower" type="number" min="0.1" step="0.1" value="2.0">
+              </label>
+            </div>
+
+            <p>
+              LAS/LAZ <b>tidak dirasterkan</b>. Aplikasi mengambil neighborhood point cloud
+              di sekitar setiap GCP, menentukan ground points, lalu mengestimasi Z langsung
+              pada koordinat GCP.
+            </p>
+          </article>
+        </div>
+
+        <div class="note">
+          <b>Auto Ground:</b> bila Class 2 ditemukan pada neighborhood GCP, hanya Class 2 digunakan.
+          Jika tidak ada Class 2 dan cloud tampak ground-only/satu kelas, semua titik digunakan.
+          Jika multi-class tanpa Class 2, proses dihentikan agar tidak mencampur vegetasi/objek lain.
+        </div>
+      </section>
+
+      <section class="panel run-panel" id="run">
+        <div class="panel-head">
+          <div class="step-code">04</div>
+          <div>
+            <h2>Validate, Run & Review</h2>
+            <p>Validasi tipe input, CRS, klasifikasi point cloud, cakupan GCP, dan common valid GCP sebelum ranking.</p>
+          </div>
+          <div class="status-pill neutral" id="runStatus">Idle</div>
+        </div>
+
+        <div class="run-actions">
+          <button class="btn secondary large" id="validateBtn">Validasi Input</button>
+          <button class="btn primary large" id="runBtn">Jalankan Perbandingan</button>
+          <button class="btn danger large" id="cancelBtn" disabled>Batalkan</button>
+          <button class="btn ghost large" id="openRunBtn" disabled>Buka Folder Run</button>
+          <button class="btn ghost large" id="openReportBtn" disabled>Buka Report</button>
+        </div>
+
+        <div class="progress-main">
+          <div class="progress-main-head">
+            <div>
+              <span class="kicker">CURRENT STAGE</span>
+              <strong id="mainStage">Menunggu proses</strong>
+            </div>
+            <strong id="mainPercent">0%</strong>
+          </div>
+          <div class="progress-main-track"><div id="mainProgressFill"></div></div>
+        </div>
+
+        <div class="result-dashboard hidden" id="resultDashboard">
+          <article class="winner-card">
+            <span>BEST RMSE</span>
+            <strong id="winnerName">—</strong>
+            <p id="winnerReason">—</p>
+          </article>
+
+          <article class="metric-card">
+            <span id="model1ResultName">Model 1</span>
+            <strong id="model1Rmse">—</strong>
+            <small id="model1ResultType">RMSE</small>
+            <div class="mini-row"><b>Bias</b><span id="model1Bias">—</span></div>
+            <div class="mini-row"><b>SD</b><span id="model1Sd">—</span></div>
+          </article>
+
+          <article class="metric-card">
+            <span id="model2ResultName">Model 2</span>
+            <strong id="model2Rmse">—</strong>
+            <small id="model2ResultType">RMSE</small>
+            <div class="mini-row"><b>Bias</b><span id="model2Bias">—</span></div>
+            <div class="mini-row"><b>SD</b><span id="model2Sd">—</span></div>
+          </article>
+
+          <article class="metric-card">
+            <span>COMMON VALID GCP</span>
+            <strong id="commonGcp">—</strong>
+            <small>subset yang sama untuk ranking</small>
+            <div class="mini-row"><b>Total GCP</b><span id="totalGcp">—</span></div>
+            <div class="mini-row"><b>Δ RMSE</b><span id="deltaRmse">—</span></div>
+          </article>
+        </div>
+
+        <div class="log-block">
+          <div class="log-head">
+            <span>ANALYSIS LOG</span>
+            <button id="clearLog">Clear</button>
+          </div>
+          <pre id="logOutput">Comparable DTM R v0.6.0 siap digunakan.</pre>
+        </div>
+      </section>
+
+      <footer>
+        Comparable DTM R v0.6.0 · DTM Raster + Final/Classified Point Cloud
+      </footer>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
